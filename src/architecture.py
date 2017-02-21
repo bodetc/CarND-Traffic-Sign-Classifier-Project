@@ -33,25 +33,25 @@ def LeNet(x):
     fc0 = flatten(conv2)
 
     # Layer 3: Fully Connected. Input = 400. Output = 120.
-    fc1_W = tf.Variable(tf.truncated_normal(shape=(400, 200), mean=mu, stddev=sigma))
-    fc1_b = tf.Variable(tf.zeros(200))
+    fc1_W = tf.Variable(tf.truncated_normal(shape=(400, 120), mean=mu, stddev=sigma))
+    fc1_b = tf.Variable(tf.zeros(120))
     fc1 = tf.matmul(fc0, fc1_W) + fc1_b
 
     # Activation.
     fc1 = tf.nn.relu(fc1)
 
-    # # Layer 4: Fully Connected. Input = 120. Output = 84.
-    # fc2_W = tf.Variable(tf.truncated_normal(shape=(120, 84), mean=mu, stddev=sigma))
-    # fc2_b = tf.Variable(tf.zeros(84))
-    # fc2 = tf.matmul(fc1, fc2_W) + fc2_b
-    #
-    # # Activation.
-    # fc2 = tf.nn.relu(fc2)
+    # Layer 4: Fully Connected. Input = 120. Output = 84.
+    fc2_W = tf.Variable(tf.truncated_normal(shape=(120, 84), mean=mu, stddev=sigma))
+    fc2_b = tf.Variable(tf.zeros(84))
+    fc2 = tf.matmul(fc1, fc2_W) + fc2_b
+
+    # Activation.
+    fc2 = tf.nn.relu(fc2)
 
     # Layer 5: Fully Connected. Input = 84. Output = 43.
-    fc3_W = tf.Variable(tf.truncated_normal(shape=(200, 43), mean=mu, stddev=sigma))
+    fc3_W = tf.Variable(tf.truncated_normal(shape=(84, 43), mean=mu, stddev=sigma))
     fc3_b = tf.Variable(tf.zeros(43))
-    logits = tf.matmul(fc1, fc3_W) + fc3_b
+    logits = tf.matmul(fc2, fc3_W) + fc3_b
 
     return logits
 
