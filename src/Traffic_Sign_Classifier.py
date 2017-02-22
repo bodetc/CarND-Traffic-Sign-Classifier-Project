@@ -41,6 +41,10 @@ print("Number of classes =", n_classes)
 import random
 import matplotlib.pyplot as plt
 
+from src.write import write_images
+write_images(X_train, y_train)
+
+
 index = random.randint(0, len(X_train))
 image = X_train[index].squeeze()
 
@@ -67,16 +71,17 @@ import tensorflow as tf
 from sklearn.utils import shuffle
 
 EPOCHS = 10
-BATCH_SIZE = 128
+BATCH_SIZE = 1024
 LEARNING_RATE = 0.001
 
 x = tf.placeholder(tf.float32, (None, 32, 32, 3))
 y = tf.placeholder(tf.int32, (None))
+keep_prob = tf.placeholder(tf.float32)
 one_hot_y = tf.one_hot(y, 43)
 
 # Training Pipeline
-logits = LeNet(x)
-cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits, one_hot_y)
+logits = LeNet(x, keep_prob)
+cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=one_hot_y)
 loss_operation = tf.reduce_mean(cross_entropy)
 optimizer = tf.train.AdamOptimizer(learning_rate = LEARNING_RATE)
 training_operation = optimizer.minimize(loss_operation)
@@ -92,7 +97,7 @@ def evaluate(X_data, y_data):
     sess = tf.get_default_session()
     for offset in range(0, num_examples, BATCH_SIZE):
         batch_x, batch_y = X_data[offset:offset+BATCH_SIZE], y_data[offset:offset+BATCH_SIZE]
-        accuracy = sess.run(accuracy_operation, feed_dict={x: batch_x, y: batch_y})
+        accuracy = sess.run(accuracy_operation, feed_dict={x: batch_x, y: batch_y, keep_prob: 1.})
         total_accuracy += (accuracy * len(batch_x))
     return total_accuracy / num_examples
 
@@ -107,7 +112,7 @@ with tf.Session() as sess:
         for offset in range(0, num_examples, BATCH_SIZE):
             end = offset + BATCH_SIZE
             batch_x, batch_y = X_train[offset:end], y_train[offset:end]
-            sess.run(training_operation, feed_dict={x: batch_x, y: batch_y})
+            sess.run(training_operation, feed_dict={x: batch_x, y: batch_y, keep_prob: .8})
 
         validation_accuracy = evaluate(X_valid, y_valid)
         print("EPOCH {} ...".format(i + 1))

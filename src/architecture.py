@@ -2,7 +2,7 @@ from tensorflow.contrib.layers import flatten
 import tensorflow as tf
 
 
-def LeNet(x):
+def LeNet(x, keep_prob):
     # Arguments used for tf.truncated_normal, randomly defines variables for the weights and biases for each layer
     mu = 0
     sigma = 0.1
@@ -40,6 +40,9 @@ def LeNet(x):
     # Activation.
     fc1 = tf.nn.relu(fc1)
 
+    # Dropout
+    fc1 = tf.nn.dropout(fc1, keep_prob)
+
     # Layer 4: Fully Connected. Input = 120. Output = 84.
     fc2_W = tf.Variable(tf.truncated_normal(shape=(120, 84), mean=mu, stddev=sigma))
     fc2_b = tf.Variable(tf.zeros(84))
@@ -48,10 +51,12 @@ def LeNet(x):
     # Activation.
     fc2 = tf.nn.relu(fc2)
 
+    # Dropout
+    fc2 = tf.nn.dropout(fc2, keep_prob)
+
     # Layer 5: Fully Connected. Input = 84. Output = 43.
     fc3_W = tf.Variable(tf.truncated_normal(shape=(84, 43), mean=mu, stddev=sigma))
     fc3_b = tf.Variable(tf.zeros(43))
     logits = tf.matmul(fc2, fc3_W) + fc3_b
 
     return logits
-
