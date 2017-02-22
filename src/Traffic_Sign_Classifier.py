@@ -5,7 +5,7 @@
 # Load pickled data
 import pickle
 
-training_file = 'traffic-signs-data/test.p'
+training_file = 'traffic-signs-data/train.p'
 validation_file = 'traffic-signs-data/valid.p'
 testing_file = 'traffic-signs-data/test.p'
 
@@ -27,11 +27,13 @@ X_test, y_test = test['features'], test['labels']
 import numpy as np
 
 n_train = np.size(y_train)
+n_valid = np.size(y_valid)
 n_test = np.size(y_test)
 image_shape = (np.shape(X_train)[1], np.shape(X_train)[2])
 n_classes = np.size(np.unique(y_train))
 
 print("Number of training examples =", n_train)
+print("Number of validation examples =", n_valid)
 print("Number of testing examples =", n_test)
 print("Image data shape =", image_shape)
 print("Number of classes =", n_classes)
