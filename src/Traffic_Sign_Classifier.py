@@ -41,8 +41,8 @@ print("Number of classes =", n_classes)
 import random
 import matplotlib.pyplot as plt
 
-from src.write import write_images
-write_images(X_train, y_train)
+# from src.write import write_images
+# write_images(X_train, y_train)
 
 
 index = random.randint(0, len(X_train))
@@ -70,7 +70,7 @@ from src.architecture import LeNet
 import tensorflow as tf
 from sklearn.utils import shuffle
 
-EPOCHS = 10
+EPOCHS = 20
 BATCH_SIZE = 1024
 LEARNING_RATE = 0.001
 

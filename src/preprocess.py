@@ -17,4 +17,6 @@ def prepocess(X_train, y_train):
         image = np.stack((Y, U, V), axis=2)
         X.append(image)
 
+    shuffle(X, y_train)
+
     return X, y_train

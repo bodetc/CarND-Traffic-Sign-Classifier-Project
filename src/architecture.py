@@ -1,7 +1,6 @@
 from tensorflow.contrib.layers import flatten
 import tensorflow as tf
 
-
 def LeNet(x, keep_prob):
     # Arguments used for tf.truncated_normal, randomly defines variables for the weights and biases for each layer
     mu = 0
