@@ -48,7 +48,7 @@ import matplotlib.pyplot as plt
 index = random.randint(0, len(X_train))
 image = X_train[index].squeeze()
 
-plt.figure(figsize=(1,1))
+plt.figure(figsize=(1, 1))
 plt.imshow(image, cmap="gray")
 print(y_train[index])
 
@@ -59,6 +59,7 @@ print(y_train[index])
 # Step 2A: Preprocessing
 
 from src.preprocess import prepocess
+
 X_train, y_train = prepocess(X_train, y_train)
 X_valid, y_valid = prepocess(X_valid, y_valid)
 
@@ -71,8 +72,8 @@ import tensorflow as tf
 from sklearn.utils import shuffle
 
 EPOCHS = 20
-BATCH_SIZE = 1024
-LEARNING_RATE = 0.001
+BATCH_SIZE = 4096
+LEARNING_RATE = 0.006
 
 x = tf.placeholder(tf.float32, (None, 32, 32, 3))
 y = tf.placeholder(tf.int32, (None))
@@ -83,7 +84,7 @@ one_hot_y = tf.one_hot(y, 43)
 logits = LeNet(x, keep_prob)
 cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=one_hot_y)
 loss_operation = tf.reduce_mean(cross_entropy)
-optimizer = tf.train.AdamOptimizer(learning_rate = LEARNING_RATE)
+optimizer = tf.train.AdamOptimizer(learning_rate=LEARNING_RATE)
 training_operation = optimizer.minimize(loss_operation)
 
 # Evaluation pipeline
@@ -91,15 +92,21 @@ correct_prediction = tf.equal(tf.argmax(logits, 1), tf.argmax(one_hot_y, 1))
 accuracy_operation = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 saver = tf.train.Saver()
 
+
 def evaluate(X_data, y_data):
     num_examples = len(X_data)
     total_accuracy = 0
     sess = tf.get_default_session()
     for offset in range(0, num_examples, BATCH_SIZE):
-        batch_x, batch_y = X_data[offset:offset+BATCH_SIZE], y_data[offset:offset+BATCH_SIZE]
+        batch_x, batch_y = X_data[offset:offset + BATCH_SIZE], y_data[offset:offset + BATCH_SIZE]
         accuracy = sess.run(accuracy_operation, feed_dict={x: batch_x, y: batch_y, keep_prob: 1.})
         total_accuracy += (accuracy * len(batch_x))
     return total_accuracy / num_examples
+
+
+import time
+
+start = time.time()
 
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
@@ -121,3 +128,22 @@ with tf.Session() as sess:
 
     saver.save(sess, './lenet')
     print("Model saved")
+
+print('Elapsed time:', time.time() - start)
+
+confusion_matrix_operation=tf.confusion_matrix(tf.argmax(logits, 1), tf.argmax(one_hot_y, 1))
+
+X_test, y_test = prepocess(X_test, y_test)
+
+# Launch the graph
+with tf.Session() as sess:
+    saver.restore(sess, './lenet')
+
+    test_accuracy = evaluate(X_test, y_test)
+    print("Test Accuracy = {:.3f}".format(test_accuracy))
+
+    confusion_matrix = sess.run(confusion_matrix_operation, feed_dict={x: X_test, y: y_test, keep_prob: 1.})
+    print(confusion_matrix)
+
+from src.write import write_images
+write_images(X_test, y_test)
