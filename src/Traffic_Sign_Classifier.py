@@ -41,10 +41,7 @@ print("Number of classes =", n_classes)
 import random
 import matplotlib.pyplot as plt
 
-# from src.write import write_images
-# write_images(X_train, y_train)
-
-
+# Show random image
 index = random.randint(0, len(X_train))
 image = X_train[index].squeeze()
 
@@ -52,16 +49,45 @@ plt.figure(figsize=(1, 1))
 plt.imshow(image, cmap="gray")
 print(y_train[index])
 
+# Save histogram
+plt.figure(figsize=(10, 6))
+plt.hist(y_train, bins=np.arange(0,44))
+plt.xlabel('Traffic sign')
+plt.ylabel('Occurrences')
+plt.xticks(np.arange(0,44))
+
+plt.savefig('writeup/histogram.png')
+
 ################################################
 # Step 2: Design and Test a Model Architecture #
 ################################################
 
 # Step 2A: Preprocessing
 
-from src.preprocess import prepocess
+from src.preprocess import preprocess
+from src.preprocess import preprocess_image
 
-X_train, y_train = prepocess(X_train, y_train)
-X_valid, y_valid = prepocess(X_valid, y_valid)
+from PIL import Image
+import cv2
+
+image=X_train[6837]
+Image.fromarray(image).save("writeup/before.png")
+yuv=(255*preprocess_image(image)).astype('uint8')
+Image.fromarray(yuv[:,:,0]).save("writeup/y.png")
+Image.fromarray(yuv[:,:,1]).save("writeup/u.png")
+Image.fromarray(yuv[:,:,2]).save("writeup/v.png")
+rgb=cv2.cvtColor(yuv, cv2.COLOR_YUV2RGB)
+Image.fromarray(rgb).save("writeup/after.png")
+
+for i in np.arange(23205,23210):
+    im = Image.fromarray(X_train[i])
+    im.save("writeup/yield/" + str(i) + ".png")
+
+X_train, y_train = preprocess(X_train, y_train)
+X_valid, y_valid = preprocess(X_valid, y_valid)
+
+from sklearn.utils import shuffle
+shuffle(X_train, y_train)
 
 # Step 2B: Architecture
 from src.architecture import LeNet
@@ -106,6 +132,7 @@ def evaluate(X_data, y_data):
 
 import time
 
+# Training
 start = time.time()
 
 with tf.Session() as sess:
@@ -122,7 +149,9 @@ with tf.Session() as sess:
             sess.run(training_operation, feed_dict={x: batch_x, y: batch_y, keep_prob: .8})
 
         validation_accuracy = evaluate(X_valid, y_valid)
+        training_accuracy = evaluate(X_train, y_train)
         print("EPOCH {} ...".format(i + 1))
+        print("Training Accuracy = {:.3f}".format(training_accuracy))
         print("Validation Accuracy = {:.3f}".format(validation_accuracy))
         print()
 
@@ -133,9 +162,9 @@ print('Elapsed time:', time.time() - start)
 
 confusion_matrix_operation=tf.confusion_matrix(tf.argmax(logits, 1), tf.argmax(one_hot_y, 1))
 
-X_test, y_test = prepocess(X_test, y_test)
+X_test, y_test = preprocess(X_test, y_test)
 
-# Launch the graph
+# Test accuracy
 with tf.Session() as sess:
     saver.restore(sess, './lenet')
 
@@ -145,5 +174,38 @@ with tf.Session() as sess:
     confusion_matrix = sess.run(confusion_matrix_operation, feed_dict={x: X_test, y: y_test, keep_prob: 1.})
     print(confusion_matrix)
 
-from src.write import write_images
-write_images(X_test, y_test)
+# Testing on new images
+
+X_new = []
+y_new=[13, 4, 5, 34, 38]
+print("New image labels are:", y)
+for i in range(0,5):
+    image = Image.open('test_images/test'+str(i+1)+'.jpg')
+    plt.figure(figsize=(1, 1))
+    plt.imshow(image, cmap="gray")
+    X_new.append(np.array(image))
+
+X_new, y_new = preprocess(X_new, y_new)
+
+# Prediction
+with tf.Session() as sess:
+    saver.restore(sess, './lenet')
+
+    prediction = sess.run(tf.argmax(logits, 1), feed_dict={x: X_new, y: y_new, keep_prob: 1.})
+    print("New image predictions:", prediction)
+
+# Accuracy
+with tf.Session() as sess:
+    saver.restore(sess, './lenet')
+
+    test_accuracy = evaluate(X_new, y_new)
+    print("New image accuracy = {:.3f}".format(test_accuracy))
+
+# Top k
+with tf.Session() as sess:
+    saver.restore(sess, './lenet')
+
+    softmax=tf.nn.softmax(logits)
+    top_k=sess.run(tf.nn.top_k(softmax, k=5), feed_dict={x: X_new, y: y_new, keep_prob: 1.})
+
+print(top_k)
