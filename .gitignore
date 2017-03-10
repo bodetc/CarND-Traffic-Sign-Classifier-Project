@@ -1,9 +1,15 @@
 data
+data_train
 .ipynb_checkpoints
 *.h5
 models
 *.swp
 *.p
-lenet.*
+/lenet.*
 checkpoint
 test_images/GRMN*.JPG
+report.html
+src/__pycache__/
+traffic-signs-data/
+writeup/*.png
+writeup/yield/
